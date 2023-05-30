@@ -48,9 +48,9 @@ const pesquisasEstaticas = [{
 },
 {
   id: 5,
-  titulo: '',
-  tipoChart: 'composed',
-  dado1: '',
+  titulo: 'Área de pesquisa de doutorado dos egressos do curso de CC',
+  tipoChart: 'radar',
+  dado1: 'areapesqdoutcc',
   dado2: '',
   editar: true,
   tipo: 'Dimensão sócio-demográfica'
@@ -66,7 +66,6 @@ const relatorio = ({ surveyResult, surveys }) => {
   const [dados, setDados] = useState([]);
   const [filtro, setFiltro] = useState('Selecione um');
   const [filtro2, setFiltro2] = useState('Selecione um');
-  const [visible, setVisible] = useState(false);
   const ref = useRef(null);
 
   const listFiltros = () => {
@@ -174,7 +173,7 @@ const relatorio = ({ surveyResult, surveys }) => {
             ref={ref}
           >
             {dados.map((item, index) => (
-              <Charts buttonVisibility={hiddenButton} complex={isComplex(surveys)} setPDF={setPDF} key={index} editavel={item.editar} title={item.titulo} dado1={item.dado1} dado2={item.dado2} tipoChart={item.tipoChart} surveyResult={surveyResult} filtrado={verificaFiltro(item.dado1, item.dado2, filtro, filtro2, surveys)} />
+              <Charts buttonVisibility={hiddenButton} complex={isComplex(surveys, item.dado1, item.dado2)} setPDF={setPDF} key={index} editavel={item.editar} title={item.titulo} dado1={item.dado1} dado2={item.dado2} tipoChart={item.tipoChart} surveyResult={surveyResult} filtrado={verificaFiltro(item.dado1, item.dado2, filtro, filtro2, surveys)} />
             ))}
             <Button
               w={'100%'}
@@ -193,7 +192,10 @@ const relatorio = ({ surveyResult, surveys }) => {
 /* ------------------------------------------------ Funções auxiliares ---------------------------------------------------------- */
 
 
-const isComplex = (surveys) => {
+const isComplex = (surveys, dado1, dado2) => {
+
+  let visibleIf = '';
+
   surveys.map((survey) => {
     Object.keys((survey)).forEach((key) => {
 
@@ -205,17 +207,42 @@ const isComplex = (surveys) => {
             if (Array.isArray(survey[key][key2][key3]))
               survey[key][key2][key3].map((it) => {
 
-                console.log(it)
-
+                if (it.name === dado1)
+                  if (it.visibleIf) visibleIf = it.visibleIf;
               })
           })
         })
     })
   })
+
+
+  if (visibleIf === '' || visibleIf === null) return null;
+
+  if (visibleIf.includes('and')) {
+    const value = visibleIf.split(' and ');
+
+    value[0] = value[0].replace(/[{$}]/g, '');
+
+    value[1] = value[1].replace(/[{$}]/g, '');
+
+    const value1 = separaChaveValor(value[0]);
+    const value2 = separaChaveValor(value[1]);
+
+    return [value1, 'and', value2];
+  }
+
+  return separaChaveValor(visibleIf);
+  
 }
 
 
-
+const separaChaveValor = (item) => {
+  const value = item.split(' = ');
+  value[0] = value[0].replace(/[{$}]/g, '');
+  value[1] = value[1].replace(/['$']/g, '');
+  
+  return value;
+}
 
 
 //Pega somente o Objeto que iremos utilizar para buscar as respostas

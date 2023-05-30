@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AreaChart, LineChart, BarChart, PieChart, ComposedChart, RadarChart, PolarGrid, CartesianGrid, Tooltip, Radar, Bar, Legend, XAxis, YAxis, Line, Area, PolarAngleAxis, Pie, PolarRadiusAxis, PieLabel, LabelList, Cell, ResponsiveContainer } from 'recharts';
 import renderActiveShape from './CustomLabelPie';
 
-const Chart = ({ type, data, height, width, dataKey, dataKey2, filtro, tipo }) => {
+const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey4 }) => {
 
     const [label, setLabel] = useState(true);
     const [state, setState] = useState({ activeIndex: null });
@@ -133,9 +133,9 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, filtro, tipo }) =
                 <Tooltip />
                 <Legend />
                 <CartesianGrid stroke="#f5f5f5" />
-                <Area type="monotone" dataKey="amt" fill="#8884d8" stroke="#8884d8" />
+                <Area type="monotone" dataKey={dataKey} fill="#8884d8" stroke="#8884d8" />
                 <Bar dataKey="pv" barSize={20} fill="#413ea0" />
-                <Line type="monotone" dataKey="uv" stroke="#ff7300" />
+                <Line type="monotone" dataKey={dataKey2} stroke="#ff7300" />
             </ComposedChart>
         )
     },
@@ -146,10 +146,8 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, filtro, tipo }) =
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                     <PolarGrid />
                     <PolarAngleAxis dataKey="name" />
-                    <PolarRadiusAxis angle={30} domain={[0, 150]} />
-                    <Radar name="Mike" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                    <Radar name="Lily" dataKey="B" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
-                    <Legend />
+                    <PolarRadiusAxis />
+                    <Radar name={dataKey3} dataKey={'value'} stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
                 </RadarChart>
             </ResponsiveContainer>
         )
@@ -157,6 +155,7 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, filtro, tipo }) =
 
     return (
         <>
+            {console.log(data)}
             {charts.map((chart, index) => chart.id === type ? chart.chart(index) : null)}
         </>
     )

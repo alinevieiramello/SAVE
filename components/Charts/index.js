@@ -7,22 +7,19 @@ import { useState, useEffect } from 'react';
 import Chart from './Chart';
 import { useRef, useCallback } from 'react';
 import { toPng } from 'html-to-image';
-import { format } from 'date-fns';
+import { format, set } from 'date-fns';
 const _ = require('underscore')
 
-/*@params:  dado1 = nome do 1 atributo a ser analisado
-            dado2 = nome do 2 atributo a ser analisado
-            surveyResult = json com todos os dados da collection surveyResult
-            tipoChart = tipo de gráfico a ser exibido
-            width = largura do gráfico
-            height = altura do gráfico
-*/
-export default function Charts({ buttonVisibility, surveyResult, dado1, dado2, width, height, tipoChart, editavel, title, filtrado }) {
+
+export default function Charts({ complex, buttonVisibility, surveyResult, dado1, dado2, width, height, tipoChart, editavel, title, filtrado }) {
 
     const [isEditing, setEditing] = useState(false);
     const [dataKey, setDataKey] = useState([]);
     const [isLoaded, setLoaded] = useState(false);
+    let dataKey3 = '';
+    let dataKey4 = '';
     const ref = useRef(null);
+
 
     const getFileName = (fileType) => `${format(new Date(), `'${title}' -"dd-MM-yy"`)}.${fileType}`
 
@@ -47,21 +44,43 @@ export default function Charts({ buttonVisibility, surveyResult, dado1, dado2, w
 
     function procuraDadosnoBanco() {
 
-        // if (isComplex(surveyResult, dado1, dado2)) {
+        if (complex) {
 
-        // }
+            if (isAnd(complex)) {
+
+                let arr = buscaObjetos(surveyResult, complex);
+
+                dataKey3 = arr[0];
+
+                arr = countByKey(arr[1], dado1);
+
+                return arr;
+
+            } if (dado2 === '') {
+
+                
+                let arr = buscaObjetos(surveyResult, complex);
+                arr = countByKey(arr, dado1);
+
+
+                return arr;
+            } else {
+
+            }
+
+        }
 
         if (dado2 === '') {
 
             let array = countByKey(surveyResult, dado1);
 
             return array;
-        } if (isConditional(surveyResult, dado2)) {
+
+        } else if (isConditional(surveyResult, dado2)) {
 
             let array = countWithConditional(surveyResult, dado1, dado2);
 
             return array;
-
         } else {
 
             let array = countByKeys(surveyResult, dado1, [dado2]);
@@ -127,10 +146,10 @@ export default function Charts({ buttonVisibility, surveyResult, dado1, dado2, w
 
     const renderShape = () => {
         return (
-            <Box display={'grid'} gridTemplateRows={'50px 500px 70px'} gridTemplateColumns={'1fr'} maxHeight={'700px'} marginBottom={30} marginTop={10} paddingTop={-20}>
+            <Box display={'grid'} gridTemplateRows={'50px 500px 70px'} gridTemplateColumns={'1fr'} maxHeight={'700px'} marginBottom={30} marginTop={10} paddingTop={-20} justifyItems={'center'}>
                 <Text justifySelf={'center'} gridRow={1} marginBottom={20}>{title}</Text>
-                <Box ref={ref} gridRow={2}>
-                    <Chart type={tipoChart} data={arr.data} height={height} width={width} dataKey={arr.dataKey} dataKey2={arr.dataKey2} />
+                <Box ref={ref} gridRow={2} w={'800px'} pos={'relative'} right={'70px'}>
+                    <Chart type={tipoChart} data={arr.data} height={height} width={width} dataKey={arr.dataKey} dataKey2={arr.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
                 </Box >
                 {buttonVisibility ? (
                     <GridItem gridRow={3} gridColumn={1} marginBottom={40}>
@@ -151,13 +170,62 @@ export default function Charts({ buttonVisibility, surveyResult, dado1, dado2, w
         )
     }
 
-    console.log(filtrado)
+
 
     return (
         <>
             {filtrado ? (isLoaded && isEditing ? renderEdit() : renderShape()) : null}
         </>
     )
+}
+
+
+/*
+------------------------------------------------------Funções Auxiliares de busca-------------------------------------------------------------------------------
+*/
+
+const isAnd = (values) => {
+    if (values[1] === 'and') return true;
+    return false;
+}
+
+const buscaObjetos = (objeto, arr) => {
+
+    const array = [];
+
+    const [chave, valor] = arr;
+
+    if (Array.isArray(chave)) {
+
+        const [chave, and, valor] = arr
+
+        const [chave1, valor1] = chave;
+        const [chave2, valor2] = valor;
+
+        console.log(chave1, valor1, chave2, valor2)
+
+        objeto.forEach((value) => {
+            if (value[chave1] === valor1) {
+
+                if (value[chave2] === valor2) {
+
+                    array.push(value);
+                }
+            }
+        })
+
+
+        return [valor2 ,array];
+
+    }
+
+    objeto.forEach((value) => {
+        if (value[chave] === valor) {
+            array.push(value)
+        }
+    });
+
+    return array;
 }
 
 
@@ -230,6 +298,15 @@ function countByKey(jsonArray, groupByKey) {
                 ocorrencias[groupValue].value += 1;
             } else {
                 ocorrencias[groupValue] = { name: groupValue, value: 1 };
+            }
+        } else if (obj[groupByKey] === 'other') {
+            if (obj[groupByKey.concat('[other]')] !== '') {
+
+                if (ocorrencias['Outros']) {
+                    ocorrencias['Outros'].value += 1;
+                } else {
+                    ocorrencias['Outros'] = { name: 'Outros', value: 1 };
+                }
             }
         }
     });

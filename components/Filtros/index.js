@@ -54,7 +54,7 @@ export default function Filtros({
                         height={'40px'}
                         justifyContent={'center'}
                         width={'inherit'}
-                        _hover={{cursor:'pointer', color:'white'}}
+                        _hover={{cursor:'pointer', color:'gray.500'}}
                         key={index}
                         onClick={() => setFiltro(opcao)}
                     >
