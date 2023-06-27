@@ -1,234 +1,60 @@
+export function capitalizeWords(frase) {
+    const palavras = frase.split(" ");
 
-import {
-    Box, GridItem, HStack, Button, Icon, Text, Stack, Collapse, Input
-} from '@chakra-ui/react'
-import { EditIcon } from '@chakra-ui/icons';
-import { useState, useEffect } from 'react';
-import Chart from './Chart';
-import { useRef, useCallback } from 'react';
-import { toPng } from 'html-to-image';
-import { format } from 'date-fns';
-const _ = require('underscore')
+    for (let i = 0; i < palavras.length; i++) {
+        const primeiraLetra = palavras[i][0].toUpperCase();
+        const restoDaPalavra = palavras[i].slice(1).toLowerCase();
 
-
-export default function Charts({ buttonVisibility, surveyResult, dado1, dado2, tipoChart, editavel, title, surveys, filtro, filtro2 }) {
-
-    const [isEditing, setEditing] = useState(false);
-    const [dataKey, setDataKey] = useState([]);
-    const [isLoaded, setLoaded] = useState(false);
-    const [complex, setComplex] = useState(isComplex(surveys, dado1, dado2));
-    const [filtrado, setFiltrado] = useState(verificaFiltro(dado1, dado2, filtro, filtro2, surveys));
-    const ref = useRef(null);
-    let dataKey3 = '';
-    let dataKey4 = '';
-
-
-
-    const getFileName = (fileType) => `${format(new Date(), `'${title}' -"dd-MM-yy"`)}.${fileType}`
-
-
-    const downloadPng = useCallback(() => {
-        if (ref.current === null) {
-            return
-        }
-        toPng(ref.current, { cacheBust: true, })
-            .then((dataUrl) => {
-                const link = document.createElement('a')
-                link.download = `${getFileName('png')}`
-                link.href = dataUrl
-                link.click()
-            })
-            .catch((err) => {
-                console.log(err)
-            })
-    }, [ref]);
-
-
-
-    function procuraDadosnoBanco() {
-
-
-        if (complex) {
-
-            let obj = [];
-
-            complex.map((value) => {
-                if (Array.isArray(value)) {
-                    if (value.length > 0) {
-
-                        value.map((value) => {
-                            if (typeof value === 'object') obj[obj.length] = value;
-
-                        })
-                    }
-                }
-            });
-
-
-
-            if (isAnd(complex)) {
-
-                let arr = buscaObjetos(surveyResult, complex);
-
-                dataKey3 = arr[0];
-
-                arr = countByKey(arr[1], dado1);
-
-                return arr;
-
-            } if (dado2 === '') {
-
-
-
-                let arr = buscaObjetos(surveyResult, complex);
-
-                if (obj.length > 0) {
-
-                    arr = calculaObjetos(arr, obj, dado1)
-
-                    return arr;
-
-                } else {
-                    arr = countByKey(arr, dado1);
-
-
-                    return arr;
-                }
-
-            } else {
-
-            }
-
-        }
-
-        if (dado2 === '') {
-
-            let array = countByKey(surveyResult, dado1);
-
-            return array;
-
-        } else if (isConditional(surveyResult, dado2)) {
-
-            let array = countWithConditional(surveyResult, dado1, dado2);
-
-            return array;
-        } else {
-
-            let array = countByKeys(surveyResult, dado1, [dado2]);
-
-            return array;
-        }
-
+        palavras[i] = primeiraLetra + restoDaPalavra;
     }
 
-    function getDataKey() {
-        const map = surveyResult;
-        let dado = []
-
-        map.forEach((value) => {
-            if (value[dado2]) {
-                dado.push(value[dado2])
-            }
-        })
-
-        let dadonovo = []
-        dado.forEach((value) => {
-
-            if (value !== dado[1]) {
-                dadonovo.push(value)
-            }
-        })
-
-        dado = dado.filter((value) => value !== dadonovo[0])
-
-        setDataKey([dado[0], dadonovo[0]])
-    }
-
-    useEffect(() => {
-
-        if (dado2 !== '') {
-            getDataKey()
-        }
-        setLoaded(true);
-
-    }, [])
-
-    const arr = {
-        data: procuraDadosnoBanco(),
-        dataKey: dataKey[0],
-        dataKey2: dataKey[1]
-    }
-
-
-
-    const renderEdit = () => {
-        return (
-            <Collapse in={isEditing} animateOpacity visibility={isEditing ? 'visible' : 'hidden'} >
-                <Stack spacing={3}>
-                    <Input variant='filled' placeholder='Titulo' onChange={(e) => handleChange(e, 'titulo')} />
-                    <Input variant='filled' placeholder='Primeiro dado a relacionar' onChange={(e) => handleChange(e, '1')} />
-                    <Input variant='filled' placeholder='Segundo dado a relacionar' onChange={(e) => handleChange(e, '2')} />
-                    <Input variant='filled' placeholder='Tipo de gráfico' onChange={(e) => handleChange(e, 'tipo')} />
-                </Stack>
-                <Button marginTop={'10px'} onClick={() => setEditing(false)}>Salvar</Button>
-            </Collapse>
-        )
-    }
-
-    const renderShape = () => {
-        return (
-            <Box display={'grid'} gridTemplateRows={'50px 500px 70px'} gridTemplateColumns={'1fr'} maxHeight={'700px'} marginBottom={30} marginTop={10} paddingTop={-20} justifyContent={'center'}>
-                <Text justifySelf={'center'} gridRow={1} marginBottom={20}>{title}</Text>
-                <Box ref={ref} gridRow={2} w={tipoChart === 'radar' ? '900px' : '1fr'} gridColumn={1}>
-
-                    <Chart type={tipoChart} data={arr.data} height={500} width={500} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : arr.dataKey} dataKey2={arr.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
-                </Box >
-                {buttonVisibility ? (
-                    <GridItem gridRow={3} gridColumn={1} marginBottom={40}>
-                        <HStack spacing={4}>
-                            <Button onClick={downloadPng}>Generate PNG</Button>
-
-                            {
-                                editavel ? (
-                                    <Button cursor={'pointer'} onClick={() => setEditing(true)} >
-                                        <Icon as={EditIcon} color={'green.100'} marginRight={3} />
-                                        Editar
-                                    </Button>) : null
-                            }
-                        </HStack>
-                    </GridItem>)
-                    : null}
-            </Box >
-        )
-    }
-
-
-
-    return (
-        <>
-            {filtrado ? (isLoaded && isEditing ? renderEdit() : renderShape()) : null}
-        </>
-    )
+    return palavras.join(" ");
 }
 
 
-/*
-------------------------------------------------------Funções Auxiliares de busca-------------------------------------------------------------------------------
-*/
-function capitalizeWords(frase) {
-    const palavras = frase.split(" ");
-  
-    for (let i = 0; i < palavras.length; i++) {
-      const primeiraLetra = palavras[i][0].toUpperCase();
-      const restoDaPalavra = palavras[i].slice(1).toLowerCase();
-  
-      palavras[i] = primeiraLetra + restoDaPalavra;
-    }
-  
-    return palavras.join(" ");
-  }
+export const listaFiltros = (surveys) => {
+    let index = 0;
+    const filtros = [];
+    filtros[index] = 'Selecione um';
+    index++;
+    surveys.map((survey) => {
+        return Object.keys((survey)).forEach((key) => {
+            if (Array.isArray(survey[key])) {
+                survey[key].map((item) => {
+                    Object.entries(item).forEach(([key2, value2]) => {
+                        if (key2 === 'title') {
+                            filtros[index] = value2;
+                            index++;
+                        }
+                    }
+                    )
+                })
+            }
+        })
+    })
 
-const verificaFiltro = (dado1, dado2, filtro1, filtro2, surveys) => {
+    for (let i in filtros) {
+        const indice = filtros[i].indexOf(' - ');
+        if (indice !== -1) {
+            const parte1 = filtros[i].substring(0, indice);
+            filtros[i] = parte1;
+        }
+    }
+
+    for (let i in filtros) {
+        if (filtros[i] !== 'Selecione um')
+            filtros[i] = capitalizeWords(filtros[i]);
+    }
+
+    filtros = filtros.filter((item, index) => {
+        return filtros.indexOf(item) === index;
+    })
+
+    return filtros;
+}
+
+
+export const verificaFiltro = (dado1, dado2, filtro1, filtro2, surveys) => {
 
     let boolv1 = false;
     let boolv2 = false;
@@ -281,7 +107,7 @@ const verificaFiltro = (dado1, dado2, filtro1, filtro2, surveys) => {
 
 
 
-const isComplex = (surveys, dado1, dado2) => {
+export const isComplex = (surveys, dado1, dado2) => {
     let isObject = [];
     let visibleIf = '';
 
@@ -339,7 +165,7 @@ const isComplex = (surveys, dado1, dado2) => {
 }
 
 
-const separaChaveValor = (item) => {
+export const separaChaveValor = (item) => {
     const value = item.split(' = ');
     value[0] = value[0].replace(/[{$}]/g, '');
     value[1] = value[1].replace(/['$']/g, '');
@@ -347,7 +173,7 @@ const separaChaveValor = (item) => {
     return value;
 }
 
-const calculaObjetos = (objetos, valueText, key) => {
+export const calculaObjetos = (objetos, valueText, key) => {
     const counter = {};
     objetos.forEach(obj => {
         valueText.forEach(vT => {
@@ -379,12 +205,12 @@ const calculaObjetos = (objetos, valueText, key) => {
     return Object.values(counter);
 }
 
-const isAnd = (values) => {
+export const isAnd = (values) => {
     if (values[1] === 'and') return true;
     return false;
 }
 
-const buscaObjetos = (objeto, arr) => {
+export const buscaObjetos = (objeto, arr) => {
 
     const array = [];
 
@@ -425,7 +251,7 @@ const buscaObjetos = (objeto, arr) => {
 
 
 
-function isConditional(objeto, dado2) {
+export function isConditional(objeto, dado2) {
 
     let bool = false;
 
@@ -438,7 +264,7 @@ function isConditional(objeto, dado2) {
     return bool;
 }
 
-function countWithConditional(objeto, key, key2) {
+export function countWithConditional(objeto, key, key2) {
     const counter = {};
     objeto.forEach(obj => {
         const groupValue = obj[key];
@@ -458,7 +284,7 @@ function countWithConditional(objeto, key, key2) {
 
 
 
-function countByKeys(jsonArray, groupByKey, countKeys) {
+export function countByKeys(jsonArray, groupByKey, countKeys) {
     const counter = {};
     jsonArray.forEach(obj => {
         const groupValue = obj[groupByKey];
@@ -482,7 +308,7 @@ function countByKeys(jsonArray, groupByKey, countKeys) {
     return Object.values(counter);
 }
 
-function countByKey(jsonArray, groupByKey) {
+export function countByKey(jsonArray, groupByKey) {
     const ocorrencias = {};
 
     jsonArray.forEach(obj => {
@@ -508,7 +334,5 @@ function countByKey(jsonArray, groupByKey) {
 
     return Object.values(ocorrencias);
 }
-
-
 
 

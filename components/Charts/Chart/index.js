@@ -8,6 +8,7 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
     const [state, setState] = useState({ activeIndex: null });
     const COLORS = ['#98FB98', '#F4A460', '#C71585', '#FFA07A', '#FFD700', '#FFE4C4', '#D8BFD8', '#E0FFFF'];
 
+
     let renderLabel = (entry) => {
         return entry.name;
     }
@@ -34,16 +35,16 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Legend />
+                {dataKey === 'value' ? null : <Legend /> }
                 <Bar dataKey={dataKey} fill="#8884d8"><LabelList dataKey={dataKey} position="top" /></Bar>
-                <Bar dataKey={dataKey2} fill="#82ca9d"><LabelList dataKey={dataKey2} position="top" /></Bar>
+                {dataKey2 ? <Bar dataKey={dataKey2} fill="#82ca9d"><LabelList dataKey={dataKey2} position="top" /></Bar> : null}
             </BarChart>
         )
     },
     {
         id: 'mixbarchart',
-        chart: (
-            <ResponsiveContainer width="100%" height="100%">
+        chart: (index) => (
+            <ResponsiveContainer key={index} width="100%" height="100%">
                 <BarChart
                     width={500}
                     height={300}
@@ -60,8 +61,8 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey={dataKey} stackId="a" fill="#8884d8" />
-                    <Bar dataKey={dataKey2} stackId="a" fill="#82ca9d" />
+                    <Bar dataKey={'value'} stackId="a" fill="#8884d8" />
+                    <Bar dataKey={'value'} stackId="a" fill="#82ca9d" />
                 </BarChart>
             </ResponsiveContainer>
         )
@@ -111,7 +112,7 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
         id: 'pie',
         chart: (index) => (
 
-            <ResponsiveContainer key={index}>
+            <ResponsiveContainer key={index} width='100%' height='100%'>
                 <PieChart>
                     <Legend align='middle' verticalAlign='bottom' />
                     <Pie label={label} paddingAngle={2} onMouseLeave={onPieOut} onMouseEnter={onPieEnter} activeIndex={state.activeIndex} activeShape={renderActiveShape} data={data} dataKey="value" nameKey='name' cx="50%" cy="50%" innerRadius={80} outerRadius={105} fill="#82ca9d">
@@ -120,7 +121,7 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
                         ))}
                     </Pie>
                 </PieChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer>  
 
         )
     },
@@ -155,7 +156,6 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
 
     return (
         <>
-            {console.log(data)}
             {charts.map((chart, index) => chart.id === type ? chart.chart(index) : null)}
         </>
     )
