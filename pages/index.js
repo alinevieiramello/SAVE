@@ -11,6 +11,7 @@ const BachelorHatIcon = createIcon({
 })
 
 export default function Home() {
+  
   return (
     <>
       <Head>

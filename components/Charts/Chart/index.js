@@ -6,7 +6,8 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
 
     const [label, setLabel] = useState(true);
     const [state, setState] = useState({ activeIndex: null });
-    const COLORS = ['#98FB98', '#F4A460', '#C71585', '#FFA07A', '#FFD700', '#FFE4C4', '#D8BFD8', '#E0FFFF'];
+    const COLORS = ['#00BFFF', '#B0C4DE', '#2E8B57', '#6B8E23', '#808000', '#BC8F8F', '#D2B48C', '#DA70D6'];
+    const barWidth = data.length * 120;
 
 
     let renderLabel = (entry) => {
@@ -30,15 +31,18 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
     const charts = [{
         id: 'bar',
         chart: (index) => (
-            <BarChart key={index} width={600} height={350} data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                {dataKey === 'value' ? null : <Legend /> }
-                <Bar dataKey={dataKey} fill="#8884d8"><LabelList dataKey={dataKey} position="top" /></Bar>
-                {dataKey2 ? <Bar dataKey={dataKey2} fill="#82ca9d"><LabelList dataKey={dataKey2} position="top" /></Bar> : null}
-            </BarChart>
+            <ResponsiveContainer key={index} width='100%' height='100%'>
+                <BarChart key={index} width={barWidth} height={350} data={data} margin={100}>
+                    <XAxis dataKey='name' fontSize={10} width={1} height={90} />
+                    <YAxis />
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <Tooltip />
+                    {dataKey === 'value' ? null : <Legend fontSize={5} width={90} rotate={90} />}
+                    <Bar dataKey={dataKey} fill="#8884d8"><LabelList dataKey={dataKey} position="top" /></Bar>
+                    {dataKey2 ? <Bar dataKey={dataKey2} fill="#82ca9d"><LabelList dataKey={dataKey2} position="top" /></Bar> : null}
+                </BarChart>
+            </ResponsiveContainer>
+
         )
     },
     {
@@ -121,7 +125,7 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
                         ))}
                     </Pie>
                 </PieChart>
-            </ResponsiveContainer>  
+            </ResponsiveContainer>
 
         )
     },

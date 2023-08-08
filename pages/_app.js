@@ -48,13 +48,15 @@ export default function MyApp({
 
   return (
     <MySessionProvider session={session}>
-      <ChakraProvider>
-        <MyContextProvider>
-          <NextNProgress color={'#38B2AC'} />
-          <Navbar />
-          <Component {...pageProps} />
-        </MyContextProvider>
-      </ChakraProvider>
+      
+        <ChakraProvider>
+          <MyContextProvider>
+            <NextNProgress color={'#38B2AC'} />
+            <Navbar />
+            <Component {...pageProps} />
+          </MyContextProvider>
+        </ChakraProvider>
+      
     </MySessionProvider>
   )
 }

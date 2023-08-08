@@ -1,7 +1,7 @@
 import React from 'react';
-import { Document, Page, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, View, StyleSheet, Text } from '@react-pdf/renderer';
 import Charts from '../Charts';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 
 
@@ -24,26 +24,50 @@ const styles = StyleSheet.create({
 
 // Create Document Component
 const MyDocument = ({ data, surveys, surveyResults, filtro, filtro2 }) => {
-    
-    const [datas, setDatas] = useState([]);
+
+    const [isLoaded, setLoaded] = useState(false);
 
 
-    
+    useEffect(() => {
+
+        setLoaded(true);
+
+    }, [0])
     return (
+        <>
+            {isLoaded &&
+                <Document style={styles.document}>
+                    <Page size="A4" style={styles.page}>
+                        <View style={styles.section}>
+                            <MyComponent/>
+                            {/* <Text> */}
+                                {/* <Charts isPdf={true} buttonVisibility={false} surveys={surveys} editavel={data[0].editar} title={data[0].titulo} dado1={data[0].dado1} dado2={data[0].dado2} tipoChart={data[0].tipoChart} surveyResult={surveyResults} filtro={filtro} filtro2={filtro2} /> */}
+                            {/* </Text> */}
+                            {/* {data.map((item, index) => { */}
 
-        <Document style={styles.document}>
-            <Page size="A4" style={styles.page}>
-                <View style={styles.section}>
-                    
-                    {data.map((item, index) => {
-                        <Charts buttonVisibility={false} surveys={surveys} key={index} editavel={item.editar} title={item.title} dado1={item.dado1} dado2={item.dado2} tipoChart={item.tipoChart} surveyResult={surveyResults} filtro={filtro} filtro2={filtro2} />
-                    })}
-                    
-                </View>
-            </Page>
-        </Document>
+
+
+                        </View>
+                    </Page>
+                </Document>
+            }
+        </>
+
 
     )
 };
+
+
+const MyComponent = () => {
+
+    return (
+        <div>
+            <p>
+                Teste
+            </p>
+
+        </div>
+    )
+}
 
 export default MyDocument;
