@@ -83,9 +83,9 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
             )
 
                 : (
-                    <Box display={'grid'} gridTemplateRows={'20px 500px 70px'} gridTemplateColumns={'1fr'} maxHeight={'700px'} marginBottom={30} marginTop={10} paddingTop={-20} justifyContent={'center'}>
+                    <Box display={'grid'} gridTemplateRows={'30px 550px 70px'} gridTemplateColumns={'1fr'} maxHeight={'700px'} marginBottom={30} marginTop={10} paddingTop={-20} justifyContent={'center'}>
                         <Text justifySelf={'center'} gridRow={1} marginBottom={5}>{title}</Text>
-                        <Box ref={ref} gridRow={2} w={tipoChart === 'radar' ? '900px' : '1fr'} gridColumn={1}>
+                        <Box ref={ref} gridRow={2} w={650} maxW={tipoChart === 'radar' ? '900px' : '2fr'} gridColumn={1}>
                             <Chart type={tipoChart} data={arr.data} height={500} width={500} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : arr.dataKey} dataKey2={arr.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
                         </Box>
                         
@@ -112,7 +112,7 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
 
     return (
         <>
-            {verificaFiltro(dado1, dado2, filtro, filtro2, surveys) ? (isLoaded && isEditing ? renderEdit() : renderShape()) : null}
+            {verificaFiltro(dado1, dado2, filtro, filtro2, surveys) && arr.data.length != 0 ? (isLoaded && isEditing ? renderEdit() : renderShape()) : null}
         </>
     )
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AreaChart, LineChart, BarChart, PieChart, ComposedChart, RadarChart, PolarGrid, CartesianGrid, Tooltip, Radar, Bar, Legend, XAxis, YAxis, Line, Area, PolarAngleAxis, Pie, PolarRadiusAxis, PieLabel, LabelList, Cell, ResponsiveContainer } from 'recharts';
+import { AreaChart, LineChart, BarChart, PieChart, ComposedChart, RadarChart, PolarGrid, CartesianGrid, Tooltip, Radar, Bar, Legend, XAxis, YAxis, Line, Area, PolarAngleAxis, Pie, PolarRadiusAxis, Text, LabelList, Cell, ResponsiveContainer } from 'recharts';
 import renderActiveShape from './CustomLabelPie';
 
 const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey4 }) => {
@@ -7,8 +7,20 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
     const [label, setLabel] = useState(true);
     const [state, setState] = useState({ activeIndex: null });
     const COLORS = ['#00BFFF', '#B0C4DE', '#2E8B57', '#6B8E23', '#808000', '#BC8F8F', '#D2B48C', '#DA70D6'];
-    const barWidth = data.length * 120;
+    const barWidth = data.length * 200;
+    // data.map(item => item.name && item.name.length > 50 ? item.name = item.name.substring(0, 35) + '...' : item.name);
+    
+    
+    function CustomizedTick(props) {
+        const { x, y, stroke, payload } = props;
+        
+        return (
+            <Text angle={30} x={x + 5} y={y + 10} width='120' dy={16} fill='#666' verticalAnchor='start' textAnchor='middle' style={{ fontSize: '11px' }} >
+                {payload.value}
+            </Text>
 
+        );
+    }
 
     let renderLabel = (entry) => {
         return entry.name;
@@ -31,15 +43,15 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
     const charts = [{
         id: 'bar',
         chart: (index) => (
-            <ResponsiveContainer key={index} width='100%' height='100%'>
-                <BarChart key={index} width={barWidth} height={350} data={data} margin={100}>
-                    <XAxis dataKey='name' fontSize={10} width={1} height={90} />
+            <ResponsiveContainer key={index} width='90%' height='100%'>
+                <BarChart key={index} data={data} margin={{ bottom: 5, top: 20 }}  >
+                    <XAxis dataKey='name' height={150} padding={{ left: 20, right: 20 }} dx={data.length > 5 ? 20 : 0} dy={data.length > 5 ? 40 : 5} interval={0} fontSize={12} tick={ data.length > 5 ? <CustomizedTick /> : {} }/>
                     <YAxis />
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 4" />
                     <Tooltip />
                     {dataKey === 'value' ? null : <Legend fontSize={5} width={90} rotate={90} />}
-                    <Bar dataKey={dataKey} fill="#8884d8"><LabelList dataKey={dataKey} position="top" /></Bar>
-                    {dataKey2 ? <Bar dataKey={dataKey2} fill="#82ca9d"><LabelList dataKey={dataKey2} position="top" /></Bar> : null}
+                    <Bar dataKey={dataKey} barSize={40} fill={COLORS[Math.floor(Math.random() * 8)]}><LabelList dataKey={dataKey} position="top" /></Bar>
+                    {dataKey2 ? <Bar dataKey={dataKey2} fill={COLORS[Math.floor(Math.random() * 8)]}><LabelList dataKey={dataKey2} position="top" /></Bar> : null}
                 </BarChart>
             </ResponsiveContainer>
 
