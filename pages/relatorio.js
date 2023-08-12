@@ -65,7 +65,7 @@ const Relatorio = ({ data, surveyResults, surveys, mediaTempoDeResposta, mediaTe
   useEffect(() => {
 
 
-    setDados([...dados, ...data]);
+    setDados(data);
 
     setLoaded(true);
     
@@ -142,7 +142,7 @@ const Relatorio = ({ data, surveyResults, surveys, mediaTempoDeResposta, mediaTe
           </Flex>
 
           <Flex
-            width={'600px'}
+            width={'700px'}
             height={'100%'}
             flexDir={'column'}
             alignSelf={'center'}
@@ -151,8 +151,6 @@ const Relatorio = ({ data, surveyResults, surveys, mediaTempoDeResposta, mediaTe
 
 
             {dados.map((item, index) => (
-
-
               <Charts isPdf={false} buttonVisibility={true} surveys={surveys} key={index} editavel={item.editar} title={item.titulo} dado1={item.dado1} dado2={item.dado2} tipoChart={item.tipoChart} surveyResult={surveyResults} filtro={filtro} filtro2={filtro2} />
             ))}
 
@@ -193,7 +191,7 @@ const Relatorio = ({ data, surveyResults, surveys, mediaTempoDeResposta, mediaTe
 }
 
 
-/*--------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------------------------------------------- */
 
 
 
@@ -265,7 +263,7 @@ const abrangeTotal = (name, surveyResult) => {
   const total = [];
 
   surveyResult.map((pessoa) => {
-  
+
     if (pessoa[name] != "") {
       total.push(pessoa);
     }

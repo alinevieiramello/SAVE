@@ -15,11 +15,13 @@ const _ = require('underscore')
 
 
 const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart, editavel, title, surveys, filtro, filtro2 }) => {
-
+    
     const [isEditing, setEditing] = useState(false);
     const [dataKey, setDataKey] = useState([]);
     const [isLoaded, setLoaded] = useState(false);
     const ref = useRef(null);
+
+    if (title == 'Estado do 2º curso de pós-graduação lato sensu:') console.log(dado1)
 
     let dataKey3 = '';
     let dataKey4 = '';
@@ -49,16 +51,16 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
         if (dado2 !== '') {
             getDataKey(surveyResult, dado2, setDataKey);
         }
-        
+
         setLoaded(true);
     }, [])
 
-    const arr = {
+    const objInfos = {
         data: separaDadosnoJSON(complex, dado1, dado2, surveyResult, dataKey3),
         dataKey: dataKey[0],
         dataKey2: dataKey[1]
     }
-
+    
     const renderEdit = () => {
         return (
             <Collapse in={isEditing} animateOpacity visibility={isEditing ? 'visible' : 'hidden'} >
@@ -78,32 +80,34 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
             isPdf ? (
                 <View>
                     <Text>{title}</Text>
-                    <Chart type={tipoChart} data={arr.data} height={500} width={500} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : arr.dataKey} dataKey2={arr.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
+                    <Chart type={tipoChart} data={objInfos.data} height={500} width={500} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : objInfos.dataKey} dataKey2={objInfos.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
                 </View>
             )
 
                 : (
-                    <Box display={'grid'} gridTemplateRows={'30px 550px 70px'} gridTemplateColumns={'1fr'} maxHeight={'700px'} marginBottom={30} marginTop={10} paddingTop={-20} justifyContent={'center'}>
-                        <Text justifySelf={'center'} gridRow={1} marginBottom={5}>{title}</Text>
-                        <Box ref={ref} gridRow={2} w={650} maxW={tipoChart === 'radar' ? '900px' : '2fr'} gridColumn={1}>
-                            <Chart type={tipoChart} data={arr.data} height={500} width={500} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : arr.dataKey} dataKey2={arr.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
+                    <Box display={'flex'} flexDir={'column'} width={'100%'} paddingTop={-20} >
+                        <Text alignSelf={'center'} h={`${title.length / 2}px`} marginBottom={5}>{title}</Text>
+                        <Box ref={ref} alignSelf={'center'} gridRow={2} minW={'80%'} w={`${objInfos.data.length * 10}%`} h={550} maxW={tipoChart === 'radar' ? '900px' : '1fr'} >
+                            <Chart type={tipoChart} data={objInfos.data} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : objInfos.dataKey} dataKey2={objInfos.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
                         </Box>
-                        
-                        {buttonVisibility ? (
-                            <GridItem gridRow={3} gridColumn={1} marginBottom={40}>
-                                <HStack spacing={4}>
-                                    <Button onClick={downloadPng}>Generate PNG</Button>
 
-                                    {
-                                        editavel ? (
-                                            <Button cursor={'pointer'} onClick={() => setEditing(true)} >
-                                                <Icon as={EditIcon} color={'green.100'} marginRight={3} />
-                                                Editar
-                                            </Button>) : null
-                                    }
-                                </HStack>
-                            </GridItem>)
-                            : null}
+                        {
+                            buttonVisibility ? (
+                                <GridItem gridRow={3} gridColumn={1} marginBottom={40}>
+                                    <HStack spacing={4}>
+                                        <Button onClick={downloadPng}>Generate PNG</Button>
+
+                                        {
+                                            editavel ? (
+                                                <Button cursor={'pointer'} onClick={() => setEditing(true)} >
+                                                    <Icon as={EditIcon} color={'green.100'} marginRight={3} />
+                                                    Editar
+                                                </Button>) : null
+                                        }
+                                    </HStack>
+                                </GridItem>)
+                                : null
+                        }
                     </Box >
                 )
         )
@@ -112,7 +116,7 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
 
     return (
         <>
-            {verificaFiltro(dado1, dado2, filtro, filtro2, surveys) && arr.data.length != 0 ? (isLoaded && isEditing ? renderEdit() : renderShape()) : null}
+            {verificaFiltro(dado1, dado2, filtro, filtro2, surveys) ? (isLoaded && isEditing ? renderEdit() : renderShape()) : null}
         </>
     )
 }
@@ -147,9 +151,10 @@ function getDataKey(surveyResult, dado2, setDataKey) {
 }
 
 function separaDadosnoJSON(complex, dado1, dado2, surveyResult, dataKey3) {
-
+    
     if (complex) {
-
+    
+        dado1 == 'estadocurlatosensu__1' ? console.log(complex) : null;
         let obj = [];
 
         complex.map((value) => {
@@ -165,7 +170,7 @@ function separaDadosnoJSON(complex, dado1, dado2, surveyResult, dataKey3) {
         });
 
         if (separaAnd(complex)) {
-
+            
             let arr = buscaObjetos(surveyResult, complex);
 
             dataKey3 = arr[0];
@@ -192,11 +197,11 @@ function separaDadosnoJSON(complex, dado1, dado2, surveyResult, dataKey3) {
 
         }
     }
-    
+
     if (dado2 === '') {
 
         let array = countByKey(surveyResult, dado1);
-        
+
         return array;
 
     } else if (isConditional(surveyResult, dado2)) {

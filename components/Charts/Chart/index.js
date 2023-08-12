@@ -1,27 +1,22 @@
 import { useState } from 'react';
 import { AreaChart, LineChart, BarChart, PieChart, ComposedChart, RadarChart, PolarGrid, CartesianGrid, Tooltip, Radar, Bar, Legend, XAxis, YAxis, Line, Area, PolarAngleAxis, Pie, PolarRadiusAxis, Text, LabelList, Cell, ResponsiveContainer } from 'recharts';
 import renderActiveShape from './CustomLabelPie';
-
+import CustomizedTick from './Customized Tick';
 const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey4 }) => {
 
     const [label, setLabel] = useState(true);
     const [state, setState] = useState({ activeIndex: null });
     const COLORS = ['#00BFFF', '#B0C4DE', '#2E8B57', '#6B8E23', '#808000', '#BC8F8F', '#D2B48C', '#DA70D6'];
-    const barWidth = data.length * 200;
-    // data.map(item => item.name && item.name.length > 50 ? item.name = item.name.substring(0, 35) + '...' : item.name);
-    
-    
-    function CustomizedTick(props) {
-        const { x, y, stroke, payload } = props;
-        
-        return (
-            <Text angle={30} x={x + 5} y={y + 10} width='120' dy={16} fill='#666' verticalAnchor='start' textAnchor='middle' style={{ fontSize: '11px' }} >
-                {payload.value}
-            </Text>
 
-        );
+
+    function necessitaAngle(data, i) {
+        let j = i;
+        if (data.length > 4) return true;
+        else if (data.length < 3) return false;
+        else if (j == data.length ? false : data[j].name.length > 50 ? true : necessitaAngle(data, ++j)) return true;
+        else return false;
     }
-
+    
     let renderLabel = (entry) => {
         return entry.name;
     }
@@ -43,9 +38,9 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
     const charts = [{
         id: 'bar',
         chart: (index) => (
-            <ResponsiveContainer key={index} width='90%' height='100%'>
+            <ResponsiveContainer key={index} width='100%' height='100%'>
                 <BarChart key={index} data={data} margin={{ bottom: 5, top: 20 }}  >
-                    <XAxis dataKey='name' height={150} padding={{ left: 20, right: 20 }} dx={data.length > 5 ? 20 : 0} dy={data.length > 5 ? 40 : 5} interval={0} fontSize={12} tick={ data.length > 5 ? <CustomizedTick /> : {} }/>
+                    <XAxis dataKey='name' height={150} padding={{ left: 20, right: 20 }} dx={data.length > 5 ? 20 : 0} dy={data.length > 5 ? 40 : 5} interval={0} fontSize={12} tick={<CustomizedTick Angle={necessitaAngle(data, 0)} />} />
                     <YAxis />
                     <CartesianGrid strokeDasharray="3 4" />
                     <Tooltip />
@@ -128,10 +123,10 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
         id: 'pie',
         chart: (index) => (
 
-            <ResponsiveContainer key={index} width='100%' height='100%'>
+            <ResponsiveContainer key={index} width='100%' height='90%'>
                 <PieChart>
                     <Legend align='middle' verticalAlign='bottom' />
-                    <Pie label={label} paddingAngle={2} onMouseLeave={onPieOut} onMouseEnter={onPieEnter} activeIndex={state.activeIndex} activeShape={renderActiveShape} data={data} dataKey="value" nameKey='name' cx="50%" cy="50%" innerRadius={80} outerRadius={105} fill="#82ca9d">
+                    <Pie label={label} paddingAngle={2} onMouseLeave={onPieOut} onMouseEnter={onPieEnter} activeIndex={state.activeIndex} activeShape={renderActiveShape} data={data} dataKey="value" nameKey='name' cx="50%" cy="50%" innerRadius={120} outerRadius={150} fill="#82ca9d">
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
