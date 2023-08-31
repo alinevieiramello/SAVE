@@ -2,21 +2,25 @@ import { useState } from 'react';
 import { AreaChart, LineChart, BarChart, PieChart, ComposedChart, RadarChart, PolarGrid, CartesianGrid, Tooltip, Radar, Bar, Legend, XAxis, YAxis, Line, Area, PolarAngleAxis, Pie, PolarRadiusAxis, Text, LabelList, Cell, ResponsiveContainer } from 'recharts';
 import renderActiveShape from './CustomLabelPie';
 import CustomizedTick from './Customized Tick';
+
+
 const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey4 }) => {
+    console.log(data)
 
     const [label, setLabel] = useState(true);
     const [state, setState] = useState({ activeIndex: null });
+
+
     const COLORS = ['#00BFFF', '#B0C4DE', '#2E8B57', '#6B8E23', '#808000', '#BC8F8F', '#D2B48C', '#DA70D6'];
 
-
-    function necessitaAngle(data, i) {
+    function needAngle(data, i) {
         let j = i;
         if (data.length > 4) return true;
         else if (data.length < 3) return false;
-        else if (j == data.length ? false : data[j].name.length > 50 ? true : necessitaAngle(data, ++j)) return true;
+        else if (j == data.length ? false : data[j].name.length > 50 ? true : needAngle(data, ++j)) return true;
         else return false;
     }
-    
+
     let renderLabel = (entry) => {
         return entry.name;
     }
@@ -40,7 +44,7 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
         chart: (index) => (
             <ResponsiveContainer key={index} width='100%' height='100%'>
                 <BarChart key={index} data={data} margin={{ bottom: 5, top: 20 }}  >
-                    <XAxis dataKey='name' height={150} padding={{ left: 20, right: 20 }} dx={data.length > 5 ? 20 : 0} dy={data.length > 5 ? 40 : 5} interval={0} fontSize={12} tick={<CustomizedTick Angle={necessitaAngle(data, 0)} />} />
+                    <XAxis dataKey='name' height={150} padding={{ left: 20, right: 20 }} dx={data.length > 5 ? 20 : 0} dy={data.length > 5 ? 40 : 5} interval={0} fontSize={12} tick={<CustomizedTick Angle={needAngle(data, 0)} />} />
                     <YAxis />
                     <CartesianGrid strokeDasharray="3 4" />
                     <Tooltip />
@@ -164,6 +168,8 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
             </ResponsiveContainer>
         )
     }]
+
+
 
     return (
         <>

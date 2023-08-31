@@ -1,5 +1,5 @@
 import {
-    Box, GridItem, HStack, Button, Icon, Text, Stack, Collapse, Input
+    Box, HStack, Button, Icon, Text, Stack, Collapse, Input
 } from '@chakra-ui/react'
 import { EditIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
@@ -7,21 +7,22 @@ import Chart from './Chart';
 import { useRef, useCallback } from 'react';
 import { toPng } from 'html-to-image';
 import { format } from 'date-fns';
-import { View } from '@react-pdf/renderer';
 import { capitalizeWords } from '../../lib/FuncoesAux';
 import { returnSurveyQuestions, separaChaveValor, returnSurveyPages } from '../../lib/ManipulaJSON';
 import { calculaObjetos, countByKey, buscaObjetos, countByKeys, countWithConditional, isConditional, separaAnd } from '../../lib/ChartsDataFunctions';
 const _ = require('underscore')
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import PDF from '../../pages/pdf';
 
+const Charts = ({ surveyResult, dado1, dado2, tipoChart, editavel, title, surveys }) => {
 
-const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart, editavel, title, surveys, filtro, filtro2 }) => {
-    
     const [isEditing, setEditing] = useState(false);
+    const [exporting, setExporting] = useState(false);
     const [dataKey, setDataKey] = useState([]);
     const [isLoaded, setLoaded] = useState(false);
     const ref = useRef(null);
 
-    if (title == 'Estado do 2º curso de pós-graduação lato sensu:') console.log(dado1)
 
     let dataKey3 = '';
     let dataKey4 = '';
@@ -30,7 +31,9 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
     const complex = verificaComplexidade(surveys, dado1);
 
     const downloadPng = useCallback(() => {
+        setExporting(true)
         if (ref.current === null) {
+            setExporting(false)
             return
         }
         toPng(ref.current, { cacheBust: true, })
@@ -43,7 +46,28 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
             .catch((err) => {
                 console.log(err)
             })
+
+        setExporting(false)
     }, [ref]);
+
+    const geraPDF = () => {
+        setExporting(true)
+
+        // setExporting(true);
+        // const element = ref.current;
+        // const canvas = await html2canvas(element);
+        // const data = canvas.toDataURL('image/png');
+
+        // const pdf = new jsPDF();
+        // const imgProperties = pdf.getImageProperties(data);
+        // const pdfWidth = pdf.internal.pageSize.getWidth();
+        // const pdfHeight =
+        //     (imgProperties.height * pdfWidth) / imgProperties.width;
+
+        // pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        // console.log(pdf.save('print.pdf'));
+        // setExporting(false);
+    };
 
 
     useEffect(() => {
@@ -60,7 +84,7 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
         dataKey: dataKey[0],
         dataKey2: dataKey[1]
     }
-    
+
     const renderEdit = () => {
         return (
             <Collapse in={isEditing} animateOpacity visibility={isEditing ? 'visible' : 'hidden'} >
@@ -76,27 +100,32 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
     }
 
     const renderShape = () => {
+
         return (
-            isPdf ? (
-                <View>
-                    <Text>{title}</Text>
-                    <Chart type={tipoChart} data={objInfos.data} height={500} width={500} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : objInfos.dataKey} dataKey2={objInfos.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
-                </View>
-            )
-
-                : (
-                    <Box display={'flex'} flexDir={'column'} width={'100%'} paddingTop={-20} >
-                        <Text alignSelf={'center'} h={`${title.length / 2}px`} marginBottom={5}>{title}</Text>
-                        <Box ref={ref} alignSelf={'center'} gridRow={2} minW={'80%'} w={`${objInfos.data.length * 10}%`} h={550} maxW={tipoChart === 'radar' ? '900px' : '1fr'} >
-                            <Chart type={tipoChart} data={objInfos.data} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : objInfos.dataKey} dataKey2={objInfos.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
+            <>
+                {exporting ? (
+                    <PDF>
+                        <Box ref={ref} h={'auto'} maxH={'900px'} width={'100%'} maxW={'1000px'} borderRadius={'11px'} display={'flex'} flexDir={'column'} marginBottom={'10px'} border={'2px solid'}>
+                            <Text alignSelf={'center'} h={'auto'} backgroundColor={'black'} textColor={'white'} borderTopLeftRadius={'9px'} borderBottomRightRadius={'9px'} width={'550px'} maxW={'550px'} marginBottom={5}>{title}</Text >
+                            <Box alignSelf={'center'} gridRow={2} minW={'80%'} w={`${objInfos.data.length * 7}%`} h={550} maxW={tipoChart === 'radar' ? '900px' : '1fr'} >
+                                <Chart type={tipoChart} data={objInfos.data} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : objInfos.dataKey} dataKey2={objInfos.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
+                            </Box>
                         </Box>
+                    </PDF>
+                )
+                    : (
+                        <Box ref={ref} h={'auto'} maxH={'900px'} width={'100%'} maxW={'1000px'} borderRadius={'11px'} display={'flex'} flexDir={'column'} marginBottom={'10px'} border={'2px solid'}>
+                            <Text alignSelf={'center'} h={'auto'} backgroundColor={'black'} textColor={'white'} borderTopLeftRadius={'9px'} borderBottomRightRadius={'9px'} width={'550px'} maxW={'550px'} marginBottom={5}>{title}</Text >
+                            <Box alignSelf={'center'} gridRow={2} minW={'80%'} w={`${objInfos.data.length * 7}%`} h={550} maxW={tipoChart === 'radar' ? '900px' : '1fr'} >
+                                <Chart type={tipoChart} data={objInfos.data} dataKey={tipoChart === 'bar' && dado2 === '' ? 'value' : objInfos.dataKey} dataKey2={objInfos.dataKey2} dataKey3={dataKey3} dataKey4={dataKey4} />
+                            </Box>
 
-                        {
-                            buttonVisibility ? (
-                                <GridItem gridRow={3} gridColumn={1} marginBottom={40}>
+                            {
+                                exporting ? null : (
+
                                     <HStack spacing={4}>
                                         <Button onClick={downloadPng}>Generate PNG</Button>
-
+                                        <Button onClick={geraPDF}>Generate PDF</Button>
                                         {
                                             editavel ? (
                                                 <Button cursor={'pointer'} onClick={() => setEditing(true)} >
@@ -105,18 +134,35 @@ const Charts = ({ isPdf, buttonVisibility, surveyResult, dado1, dado2, tipoChart
                                                 </Button>) : null
                                         }
                                     </HStack>
-                                </GridItem>)
-                                : null
-                        }
-                    </Box >
-                )
-        )
+                                )
+
+                            }
+                        </Box >
+                    )
+                }
+            </>)
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     return (
         <>
-            {verificaFiltro(dado1, dado2, filtro, filtro2, surveys) ? (isLoaded && isEditing ? renderEdit() : renderShape()) : null}
+            {isLoaded && isEditing ? renderEdit() : renderShape()}
         </>
     )
 }
@@ -150,11 +196,10 @@ function getDataKey(surveyResult, dado2, setDataKey) {
     setDataKey([dado[0], dadonovo[0]])
 }
 
-function separaDadosnoJSON(complex, dado1, dado2, surveyResult, dataKey3) {
-    
+function separaDadosnoJSON(complex, dado1, dado2, surveyResult) {
+
     if (complex) {
-    
-        dado1 == 'estadocurlatosensu__1' ? console.log(complex) : null;
+
         let obj = [];
 
         complex.map((value) => {
@@ -170,17 +215,15 @@ function separaDadosnoJSON(complex, dado1, dado2, surveyResult, dataKey3) {
         });
 
         if (separaAnd(complex)) {
-            
+
             let arr = buscaObjetos(surveyResult, complex);
 
-            dataKey3 = arr[0];
-
-            arr = countByKey(arr[1], dado1);
+            arr = countByKey(arr, dado1);
 
             return arr;
 
         } else if (dado2 === '') {
-            
+
             let arr = buscaObjetos(surveyResult, complex);
 
             if (obj.length > 0) {
