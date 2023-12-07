@@ -1,0 +1,14 @@
+ [
+    {
+      "id": "Em construção",
+      "nome": "Em construção"
+    },
+    {
+      "id": "Ativo",
+      "nome": "Ativos"
+    },
+    {
+      "id": "Concluído",
+      "nome": "Concluídos"
+    }
+]

@@ -1,191 +1,185 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getSession } from 'next-auth/react';
 import {
-  Button, Collapse, Flex, Input, Radio, Stack, Text, Box, useColorMode, Alert, AlertIcon, AlertTitle, AlertDescription, CloseButton, useDisclosure
+  Button, Flex, FormControl, FormLabel, Input, Select, Text
 } from '@chakra-ui/react'
 import clientPromise from "../lib/mongodb";
-import Filtros from '../components/Filtros';
 import Charts from '../components/Charts';
-import { listaFiltros } from '../lib/ChartsDataFunctions';
 import { getSurveyResult } from '../lib/FuncoesAux';
 import { returnSurveyQuestions } from '../lib/ManipulaJSON';
+import Pagination from '../components/Pagination';
+import { Field, Form, Formik } from 'formik';
+import PropTypes from 'prop-types';
 
 
+let PageSize = 10;
 
-const Relatorio = ({ data, surveyResults, surveys, mediaTempoDeResposta, mediaTempoDeRespostaSemSAVE }) => {
+
+const Relatorio = ({ data, surveyResults, surveys }) => {
 
   surveyResults = getSurveyResult(surveyResults);
   /* -------------------------------------------------- */
-
-  const [isLoaded, setLoaded] = useState(false);
-
+  const [loaded, setLoaded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   /* -------------------------------------------------- */
-
-  const [title, setTitle] = useState('');
-  const [tipoChart, setTipoChart] = useState('');
-  const [dado1, setDado1] = useState('');
-  const [dado2, setDado2] = useState('');
-  const [editavel, setEditavel] = useState(false);
-
-  /* -------------------------------------------------- */
-
   const [addDado, setAddDado] = useState(false);
-  const [dados, setDados] = useState([]);
-
-  const [filtro, setFiltro] = useState('Selecione um');
-  const [filtro2, setFiltro2] = useState('Selecione um');
-  const ref = useRef();
+  const [dados, setDados] = useState(data);
 
 
-  const geraPDF = (objs) => {
+  const addNewChart = (values) => {
+    console.log(values)
+    
+    if(values.title !== '' || values.firstdata !== '' || values.seconddata !== '' || values.editable !== ''){
 
-    const url = 'http://localhost:3000/relatorio/pdf';
-    window.open(url);
-  }
+      setDados([...dados, {titulo: values.title, dado1: values.title, dado2: values.seconddata, tipoChart: values.chartType, editar: values.editable}])
 
-  const setNewChart = () => {
-
-    if (title !== '' || tipoChart !== '' || dado1 !== '') {
-
-      const novoChart = {
-        id: dados.length + 1,
-        titulo: title,
-        tipoChart: tipoChart,
-        dado1: dado1,
-        dado2: dado2,
-        editar: editavel,
-      }
-
-      setDados([...dados, novoChart]);
     }
+
     setAddDado(false);
   }
 
 
   useEffect(() => {
-
-
-    setDados(data);
-
     setLoaded(true);
-    
+
   }, [0]);
 
+  const currentTableData = useMemo(() => {
+    const firstPageIndex = (currentPage - 1) * PageSize;
+    const lastPageIndex = firstPageIndex + PageSize;
+    return dados.slice(firstPageIndex, lastPageIndex);
+  }, [currentPage]);
 
 
   //JSX.React renderizado no DOM
   return (
     <>
-      {isLoaded && (
-        <Flex
-          flexDir={'column'}
-        >
+      {loaded &&
 
-          <Text
-            fontSize={'2xl'}
-            fontWeight={'bold'}
-            alignSelf={'center'}
-          >
-            Visualização dos dados
-          </Text>
+        (
           <Flex
-            paddingTop={'-20px'}
+            flexDir={'column'}
+            width={'100%'}
             position={'relative'}
-            width={'200px'}
-            left={'70%'}
-
+            overflow={'hidden'}
+            height={'auto'}
           >
-            <Button
-              onClick={() => geraPDF(dados)}
+
+            <Text
+              fontSize={'2xl'}
+              fontWeight={'bold'}
+              alignSelf={'center'}
+              marginBottom={'125px'}
             >
-              Generate PDF
-            </Button>
-
-          </Flex>
-          <Flex
-            flexDir={'row'}
-            borderRadius={'lg'}
-            maxWidth={600}
-            position={'absolute'}
-            alignItems={'center'}
-          >
-            <Filtros filtros={listaFiltros(0, surveys)} filtro={filtro} setFiltro={setFiltro} />
-            <Filtros filtros={listaFiltros(0, surveys)} filtro={filtro2} setFiltro={setFiltro2} />
-
-          </Flex>
-
-          <Flex
-            flexDir={'column'}
-            maxW={200}
-            position={'absolute'}
-            top={'250px'}
-            left={'3%'}
-          >
-
-            <Box bg="gray.100" p={2} borderRadius="md">
-
-              <Text fontSize="xl" fontWeight="bold" textAlign="center">
-                Tempo médio de resposta:
-              </Text>
-
-              <Text textAlign="center" fontFamily="mono">
-                Com SAVE: {Math.floor(mediaTempoDeResposta / 60)}min{" "}
-                {(mediaTempoDeResposta % 60).toFixed(0)}s
-              </Text>
-
-              <Text textAlign="center" fontFamily="mono">
-                Sem SAVE: {Math.floor(mediaTempoDeRespostaSemSAVE / 60)}min{" "}
-                {(mediaTempoDeRespostaSemSAVE % 60).toFixed(0)}s
-              </Text>
-
-            </Box>
-          </Flex>
-
-          <Flex
-            width={'700px'}
-            height={'100%'}
-            flexDir={'column'}
-            alignSelf={'center'}
-            ref={ref}
-          >
+              Visualização dos dados
+            </Text>
+            <Flex
+              width={'900px'}
+              flexDir={'column'}
+              alignSelf={'center'}
+            >
 
 
-            {dados.map((item, index) => (
-              <Charts isPdf={false} buttonVisibility={true} surveys={surveys} key={index} editavel={item.editar} title={item.titulo} dado1={item.dado1} dado2={item.dado2} tipoChart={item.tipoChart} surveyResult={surveyResults} filtro={filtro} filtro2={filtro2} />
-            ))}
+              {currentTableData.map((item, index) => (
+                <Charts surveys={surveys} key={index} editavel={item.editar} title={item.titulo} dado1={item.dado1} dado2={item.dado2} tipoChart={item.tipoChart} surveyResult={surveyResults} />
+              ))}
 
-            {addDado
-              ?
-              (
-                <Collapse in={addDado} animateOpacity visibility={addDado ? 'visible' : 'hidden'} >
-                  <Stack spacing={3} marginBottom={'20px'}>
-                    <Input variant='filled' placeholder='Titulo' onChange={(e) => setTitle(e.target.value)} />
-                    <Input variant='filled' placeholder='Primeiro dado a relacionar' onChange={(e) => setDado1(e.target.value)} />
-                    <Input variant='filled' placeholder='Segundo dado a relacionar' onChange={(e) => setDado2(e.target.value)} />
-                    <Input variant='filled' placeholder='Tipo de gráfico' onChange={(e) => setTipoChart(e.target.value)} />
-                    <Radio colorScheme='green' value='true' onChange={(e) => setEditavel(e.target.value)}>Editável</Radio>
-                    <Radio colorScheme='red' value='false' onChange={(e) => setEditavel(e.target.value)}>Não Editável</Radio>
-                  </Stack>
-                  <Button marginBottom={'30px'} onClick={() => setNewChart()}>Salvar</Button>
-                </Collapse>
+              {addDado
+                ?
+                (
+                  <Formik
+                    initialValues={{ title: '', firstdata: '', seconddata: '', editable: false, chartType: '' }}
+                    onSubmit={(values, actions) => {
+                      setTimeout(() => {
+                        addNewChart(values)
+                        actions.setSubmitting(false)
+                      }, 1000)
+                    }}
+                  >
+                    {(props) => (
+                      <Form>
+                        <Field name='title'>
+                          {({ field, form }) => (
+                            <FormControl isInvalid={form.errors.title && form.touched.title}>
+                              <FormLabel>Titulo</FormLabel>
+                              <Input {...field} />
+                            </FormControl>
+                          )}
+                        </Field>
+                        <Field name='firstdata'>
+                          {({ field, form }) => (
+                            <FormControl isInvalid={form.errors.firstdata && form.touched.firstdata}>
+                              <FormLabel>Primeiro Dado</FormLabel>
+                              <Input {...field} />
+                            </FormControl>
+                          )}
+                        </Field>
+                        <Field name='seconddata'>
+                          {({ field, form }) => (
+                            <FormControl isInvalid={form.errors.name && form.touched.name}>
+                              <FormLabel>Segundo Dado</FormLabel>
+                              <Input {...field} />
+                            </FormControl>
+                          )}
+                        </Field>
+                        <Field name='chartType'>
+                          {({ field, form }) => (
+                            <FormControl isInvalid={form.errors.name && form.touched.name}>
+                              <FormLabel>Tipo do Chart</FormLabel>
+                              <Select {...field} placeholder='Selecione uma opção' >
+                                <option value='bar'>Barras</option>
+                                <option value='pie'>Pizza</option>
+                              </Select>
+                            </FormControl>
+                          )}
+                        </Field>
+                        <Field name='editable'>
+                          {({ field, form }) => (
+                            <FormControl isInvalid={form.errors.name && form.touched.name}>
+                              <FormLabel>Editavél</FormLabel>
+                              <Select {...field} placeholder='Selecione uma opção' >
+                                <option value='true'>Sim</option>
+                                <option value='false'>Não</option>
+                              </Select>
+                            </FormControl>
+                          )}
+                        </Field>
+                        <Button
+                          mt={4}
+                          colorScheme='teal'
+                          isLoading={props.isSubmitting}
+                          type='submit'
+                        >
+                          Submit
+                        </Button>
+                      </Form>
+                    )}
+                  </Formik>
 
-              )
-              :
-              (
-                <Button
-                  w={'100%'}
-                  pos={'relative'}
-                  fontSize={'20px'}
-                  marginBottom={'30px'}
-                  onClick={() => setAddDado(!addDado)}
-                >
-                  +
-                </Button>
-              )}
+                )
+                :
+                (
+                  <Button
+                    w={'100%'}
+                    pos={'relative'}
+                    fontSize={'20px'}
+                    marginBottom={'30px'}
+                    onClick={() => setAddDado(!addDado)}
+                  >
+                    +
+                  </Button>
+                )}
 
-          </Flex>
-        </Flex >
-      )}
+            </Flex>
+            <Pagination
+              currentPage={currentPage}
+              totalCount={dados.length}
+              pageSize={PageSize}
+              onPageChange={page => setCurrentPage(page)}
+            />
+          </Flex >
+        )
+      }
     </>
   )
 }
@@ -197,7 +191,7 @@ const Relatorio = ({ data, surveyResults, surveys, mediaTempoDeResposta, mediaTe
 
 
 
-const geraCharts = (surveys, surveyResult) => {
+const genCharts = (surveys, surveyResult) => {
 
   const charts = [];
 
@@ -221,7 +215,7 @@ const geraCharts = (surveys, surveyResult) => {
                 const novoChart = {
                   id: charts.length + 1,
                   titulo: titulo,
-                  tipoChart: verificaTipoChart(name, surveys, surveyResult),
+                  tipoChart: verifyChartType(name, surveys, surveyResult),
                   dado1: name,
                   dado2: '',
                   editar: false,
@@ -240,22 +234,22 @@ const geraCharts = (surveys, surveyResult) => {
   return charts;
 }
 
-const verificaTipoChart = (name, surveys, surveyResult) => {
+const verifyChartType = (name, surveys, surveyResult) => {
 
-  let tipoChart = '';
+  let chartType = '';
 
   const questions = returnSurveyQuestions(surveys);
 
   questions.map((question) => {
     if (question.name === name)
       if (question.choices) {
-        if (abrangeTotal(question.name, surveyResult)) tipoChart = 'pie';
-        else tipoChart = 'bar';
+        if (abrangeTotal(question.name, surveyResult)) chartType = 'pie';
+        else chartType = 'bar';
       }
   })
 
 
-  return tipoChart;
+  return chartType;
 }
 
 const abrangeTotal = (name, surveyResult) => {
@@ -281,42 +275,15 @@ export async function getServerSideProps(context) {
   if (session) {
     let surveyResults = await db.collection("surveyResults").find({}).toArray();
     let surveys = await db.collection("surveys").find({}).toArray();
-    let answers_2020 = await db.collection("answers_2020").find({}).toArray();
+
     let surveyResult = getSurveyResult(surveyResults);
-    let dados = geraCharts(surveys, surveyResult);
-
-
-    const tempoDeRespostaSemSAVE = answers_2020.map((answer) => {
-      return answer.interviewtime;
-    });
-
-    const tempoDeRespostaSemSave2 = tempoDeRespostaSemSAVE.filter(
-      (resposta) => typeof resposta === "number"
-    );
-
-    const mediaTempoDeRespostaSemSAVE =
-      tempoDeRespostaSemSave2.reduce((total, current) => {
-        return total + current;
-      }) / tempoDeRespostaSemSave2.length;
-
-    const tempoDeResposta = surveyResults.map((survey) => {
-      return survey.timeSpent;
-    });
-
-    const mediaTempoDeResposta =
-      tempoDeResposta.reduce((total, tempo) => {
-        return total + tempo;
-      }) / tempoDeResposta.length;
-
-
+    let chartsDatas = genCharts(surveys, surveyResult);
 
     return {
       props: {
-        data: dados,
+        data: chartsDatas,
         surveys: JSON.parse(JSON.stringify(surveys)),
         surveyResults: JSON.parse(JSON.stringify(surveyResults)),
-        mediaTempoDeResposta: JSON.parse(JSON.stringify(mediaTempoDeResposta)),
-        mediaTempoDeRespostaSemSAVE: JSON.parse(JSON.stringify(mediaTempoDeRespostaSemSAVE)),
       },
     };
 

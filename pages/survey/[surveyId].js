@@ -2,19 +2,32 @@ import { getSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import clientPromise from '../../lib/mongodb'
 import mongoose from 'mongoose'
-import { Container } from '@chakra-ui/react'
+import { Box, Container, Drawer, useDisclosure } from '@chakra-ui/react'
+import Sidebar from '../../components/Sidebar'
 import Head from 'next/head'
 
 const SurveyWidget = dynamic(() => import('../../components/SurveyWidget'), {
   ssr: false,
 })
 
+
+
 export default function Survey({ survey, results, answersFrom2020 }) {
+
+
+  const pages = survey.pages
+
+  let arr = pages.map((page) => { return page.title })
+
+  const LinkItems = arr.map((item, index) => { return { name: item, icon: `D0${index + 1}` } })
+
   return (
     <>
       <Head>
         <title>SAVE - Questionário</title>
       </Head>
+      <Sidebar linkItems={LinkItems} />
+
       <Container
         as={'main'}
         bgColor={'white'}
@@ -24,6 +37,7 @@ export default function Survey({ survey, results, answersFrom2020 }) {
         my={{ base: 14, md: 22 }}
         borderRadius={'0.375rem'}
       >
+
         <SurveyWidget
           survey={survey}
           results={results}
@@ -32,6 +46,26 @@ export default function Survey({ survey, results, answersFrom2020 }) {
         />
       </Container>
     </>
+  )
+}
+
+const QuestionsProgress = ({ survey, results }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  return (
+    <Box>
+      <Drawer
+                isOpen={isOpen}
+                placement="right"
+                onClose={onClose}
+                returnFocusOnClose={false}
+                onOverlayClick={onClose}
+                size="full">
+                <DrawerContent>
+                    <SidebarContent onClose={onClose} linkItems={linkItems} />
+                </DrawerContent>
+            </Drawer>
+
+    </Box>
   )
 }
 

@@ -5,8 +5,8 @@ import CustomizedTick from './Customized Tick';
 
 
 const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey4 }) => {
-    console.log(data)
 
+    console.log(dataKey2)
     const [label, setLabel] = useState(true);
     const [state, setState] = useState({ activeIndex: null });
 
@@ -50,7 +50,7 @@ const Chart = ({ type, data, height, width, dataKey, dataKey2, dataKey3, dataKey
                     <Tooltip />
                     {dataKey === 'value' ? null : <Legend fontSize={5} width={90} rotate={90} />}
                     <Bar dataKey={dataKey} barSize={40} fill={COLORS[Math.floor(Math.random() * 8)]}><LabelList dataKey={dataKey} position="top" /></Bar>
-                    {dataKey2 ? <Bar dataKey={dataKey2} fill={COLORS[Math.floor(Math.random() * 8)]}><LabelList dataKey={dataKey2} position="top" /></Bar> : null}
+                    {dataKey2 ? <Bar dataKey={dataKey2} barSize={40} fill={COLORS[Math.floor(Math.random() * 8)]}><LabelList dataKey={dataKey2} position="top" /></Bar> : null}
                 </BarChart>
             </ResponsiveContainer>
 
